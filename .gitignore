@@ -1,0 +1,15 @@
+node_modules/
+client/dist/
+server/data/*.db
+server/data/*.db-*
+.env
+.DS_Store
+
+# Lockfiles are intentionally NOT committed. A package-lock.json generated on one OS (e.g.
+# Windows locally) records OS-specific optional-dependency bindings (native binaries for
+# packages like rolldown/esbuild) that don't resolve correctly on a different OS (e.g. Render's
+# Linux build environment) — a known npm bug: https://github.com/npm/cli/issues/4828. Always
+# letting `npm install` resolve fresh on whichever machine is building avoids this entirely.
+package-lock.json
+client/package-lock.json
+server/package-lock.json
