@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "prebuild": "node scripts/ensure-linux-binding.cjs",
     "build": "vite build",
     "lint": "oxlint",
     "preview": "vite preview"
