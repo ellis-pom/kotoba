@@ -59,6 +59,12 @@ export default function AddLesson() {
   const [extractError, setExtractError] = useState('');
   const [extractNotice, setExtractNotice] = useState('');
 
+  const [importMode, setImportMode] = useState('url'); // 'url' | 'text'
+  const [importUrl, setImportUrl] = useState('');
+  const [importText, setImportText] = useState('');
+  const [importing, setImporting] = useState(false);
+  const [importError, setImportError] = useState('');
+
   useEffect(() => {
     if (!isEditing) return;
     api.getLesson(editingNumber)
@@ -117,6 +123,21 @@ export default function AddLesson() {
     }
   };
 
+  const handleImport = async () => {
+    setImporting(true);
+    setImportError('');
+    try {
+      const res = importMode === 'url'
+        ? await api.importLessonFromUrl(importUrl.trim())
+        : await api.importLessonFromText(importText);
+      navigate(`/lessons/${res.lesson.number}`);
+    } catch (e) {
+      setImportError(e.message);
+    } finally {
+      setImporting(false);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
@@ -167,6 +188,48 @@ export default function AddLesson() {
           </div>
           {extractError && <div className="error-banner" style={{ marginTop: 12, marginBottom: 0 }}>{extractError}</div>}
           {extractNotice && <p style={{ marginTop: 12, marginBottom: 0, color: 'var(--success)', fontSize: '0.9rem' }}>{extractNotice}</p>}
+        </div>
+      )}
+
+      {!isEditing && (
+        <div className="card" style={{ marginBottom: 20 }}>
+          <h3 style={{ marginTop: 0 }}>Import from a text file</h3>
+          <p style={{ color: 'var(--paper-dim)', fontSize: '0.9rem', marginTop: 0 }}>
+            For adding lessons without opening this form — e.g. from your phone. Write the lesson as plain text
+            (a <code>LESSON:</code> line, then <code>VOCAB:</code>/<code>KANJI:</code>/<code>GRAMMAR:</code>/<code>CULTURE:</code> sections,
+            same <code>kanji | reading | english</code> style as the boxes below), save it as a GitHub Gist, and either
+            paste its raw URL or paste the text itself here. This saves immediately — no review step — since there's no AI involved to misread anything.
+          </p>
+          <div className="tag-list" style={{ marginBottom: 12 }}>
+            <button type="button" className={'tag-btn' + (importMode === 'url' ? ' active' : '')} onClick={() => setImportMode('url')}>From URL</button>
+            <button type="button" className={'tag-btn' + (importMode === 'text' ? ' active' : '')} onClick={() => setImportMode('text')}>Paste text</button>
+          </div>
+          {importMode === 'url' ? (
+            <div className="field" style={{ marginBottom: 12 }}>
+              <input
+                value={importUrl}
+                onChange={(e) => setImportUrl(e.target.value)}
+                placeholder="https://gist.githubusercontent.com/.../raw/lesson.txt"
+              />
+            </div>
+          ) : (
+            <textarea
+              className="paste-area"
+              style={{ marginBottom: 12 }}
+              value={importText}
+              onChange={(e) => setImportText(e.target.value)}
+              placeholder={'LESSON: 26\nTITLE: Optional title\n\nVOCAB:\n飼う | かう | to keep (a pet)\n\nKANJI:\n飼 | シ, かう | keep, raise'}
+            />
+          )}
+          <button
+            type="button"
+            className="btn btn-secondary"
+            onClick={handleImport}
+            disabled={importing || (importMode === 'url' ? !importUrl.trim() : !importText.trim())}
+          >
+            {importing ? 'Importing…' : 'Import'}
+          </button>
+          {importError && <div className="error-banner" style={{ marginTop: 12, marginBottom: 0 }}>{importError}</div>}
         </div>
       )}
 

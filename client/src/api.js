@@ -29,6 +29,8 @@ export const api = {
   getLessons: () => request('/lessons'),
   getLesson: (number) => request(`/lessons/${number}`),
   saveLesson: (lesson) => request('/lessons', { method: 'POST', body: JSON.stringify(lesson) }),
+  importLessonFromUrl: (url) => request('/lessons/import-url', { method: 'POST', body: JSON.stringify({ url }) }),
+  importLessonFromText: (text) => request('/lessons/import-text', { method: 'POST', body: JSON.stringify({ text }) }),
   deleteLesson: (number) => request(`/lessons/${number}`, { method: 'DELETE' }),
 
   getDueCards: (params) => request(`/review/due?${new URLSearchParams(params)}`),

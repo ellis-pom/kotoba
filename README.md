@@ -170,6 +170,18 @@ On the **Add Lesson** page, paste content directly — no file upload needed:
 Saving a lesson number that already exists **replaces** its content, so you can re-paste a lesson
 if you need to fix something.
 
+**Importing without opening the form** (e.g. from your phone, no laptop needed): write a lesson as
+one plain-text file using `LESSON:`/`TITLE:`/`VOCAB:`/`KANJI:`/`GRAMMAR:`/`CULTURE:` section
+headers (same `kanji | reading | english` row format throughout — see `server/parseLessonText.js`
+for the exact grammar), save it as a GitHub Gist, and either paste its raw URL or paste the text
+itself into the "Import from a text file" box on the Add Lesson page. For safety, URL imports are
+only allowed from `raw.githubusercontent.com` and `gist.githubusercontent.com`. This saves
+immediately with no review step, since it's a deterministic parse rather than an AI guess.
+
+**Studying without the kanji crutch:** the Study page has a 漢字 On/Off toggle next to the mode
+filters — switch it off to have flashcards show readings only, useful for practicing recognizing
+words by sound/kana before you're solid on the kanji itself.
+
 ## Project structure
 
 ```
@@ -177,6 +189,7 @@ server/          Express API + libsql (Turso-compatible) database
   routes/        auth (accounts/sessions), lessons, review (SRS), quiz, ai, verbs, stats, data (backup/restore)
   db.js          schema + database connection (local file by default, Turso when configured)
   auth.js        password hashing (scrypt) + session token generation
+  parseLessonText.js  parser for the plain-text lesson import format
   srs.js         SM-2 scheduling
   conjugate.js   deterministic verb/adjective conjugation engine
 client/          React app (Vite)

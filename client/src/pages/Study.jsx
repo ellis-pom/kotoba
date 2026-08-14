@@ -11,12 +11,18 @@ const MODES = [
 
 // Normalizes how each card type exposes its Japanese text / English meaning / reading,
 // so the rest of the component doesn't need to branch on card_type everywhere.
-function getFields(card) {
+// When showKanji is false, "japanese" falls back to the pure reading (kana) — useful for
+// practicing reading recognition without leaning on kanji as a crutch.
+function getFields(card, showKanji) {
   const c = card?.content;
   if (!c) return { japanese: '', english: '', reading: '' };
-  if (card.card_type === 'vocabulary') return { japanese: c.kanji_form || c.reading, english: c.english, reading: c.reading };
-  if (card.card_type === 'kanji') return { japanese: c.character, english: c.meaning, reading: c.reading };
-  return { japanese: c.pattern, english: c.meaning_en, reading: c.pattern }; // grammar
+  if (card.card_type === 'vocabulary') {
+    return { japanese: showKanji ? (c.kanji_form || c.reading) : c.reading, english: c.english, reading: c.reading };
+  }
+  if (card.card_type === 'kanji') {
+    return { japanese: showKanji ? c.character : c.reading, english: c.meaning, reading: c.reading };
+  }
+  return { japanese: c.pattern, english: c.meaning_en, reading: c.pattern }; // grammar — no kanji/kana distinction to toggle
 }
 
 // Accepts romaji or kana input, converts to hiragana, and compares against the stored reading.
@@ -28,6 +34,7 @@ function normalize(str) {
 export default function Study() {
   const [maxLesson, setMaxLesson] = useState('');
   const [activeModes, setActiveModes] = useState(MODES.map((m) => m.key));
+  const [showKanji, setShowKanji] = useState(true);
   const [queue, setQueue] = useState([]);
   const [idx, setIdx] = useState(0);
   const [revealed, setRevealed] = useState(false);
@@ -63,7 +70,7 @@ export default function Study() {
   };
 
   const card = queue[idx];
-  const fields = useMemo(() => getFields(card), [card]);
+  const fields = useMemo(() => getFields(card, showKanji), [card, showKanji]);
   const front = useMemo(() => {
     if (!card) return '';
     return card.mode === 'jp_to_en' ? fields.japanese : fields.english;
@@ -119,6 +126,13 @@ export default function Study() {
               {m.label}
             </button>
           ))}
+          <button
+            className={'tag-btn' + (showKanji ? ' active' : '')}
+            onClick={() => setShowKanji((v) => !v)}
+            title="When off, kanji is replaced with its reading — practice recognizing words by sound/kana alone"
+          >
+            {showKanji ? '漢字 On' : '漢字 Off'}
+          </button>
         </div>
       </div>
 
